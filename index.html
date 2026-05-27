@@ -224,7 +224,7 @@ tbody td{padding:11px 14px;font-size:.85rem}
 .lcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.8rem}
 .lcard h2{font-size:1.1rem;font-weight:700;margin-bottom:.35rem}
 .lcard .hint{font-size:.83rem;color:var(--muted);margin-bottom:1.3rem}
-.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.role-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem}
 .rbtn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);cursor:pointer;transition:var(--trans);text-align:left;width:100%}
 .rbtn:hover{border-color:var(--blue2);background:rgba(21,101,192,.1);transform:translateY(-2px)}
 .ri{font-size:1.3rem}
@@ -275,7 +275,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
         <button class="rbtn" onclick="selRole('PILOT')"><span class="ri">👨‍✈️</span><span class="rl">Pilot</span><span class="rd">Submit &amp; track requests</span></button>
         <button class="rbtn" onclick="selRole('RELOCATION')"><span class="ri">🏢</span><span class="rl">Relocation Team</span><span class="rd">Final approvals</span></button>
         <button class="rbtn" onclick="selRole('AEP')"><span class="ri">📋</span><span class="rl">AEP Team</span><span class="rd">Review AEP status</span></button>
-        <button class="rbtn" onclick="selRole('OCC')"><span class="ri">🗺️</span><span class="rl">OCC Team</span><span class="rd">Manpower planning</span></button>
       </div>
     </div>
     <!-- Pilot login -->
@@ -359,19 +358,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
       <div id="aepTable" class="hidden"></div>
     </div>
 
-    <!-- OCC PAGE -->
-    <div id="occPage" class="hidden container" style="padding-top:0">
-      <div class="ph"><div class="ph-row"><div><h2>OCC Manpower Portal</h2><p>Relocation planning · SWAPs highlighted in cyan</p></div><button class="btn btn-s" onclick="loadAll()">↻ Refresh</button></div></div>
-      <div class="stats" id="occStats"></div>
-      <div class="fbar">
-        <input class="fc" id="occSrch" placeholder="Search IGA / Name / ID…" oninput="occFilter()"/>
-        <select class="fc" id="occFSt" onchange="occFilter()"><option value="">All Statuses</option><option>Waitlisted</option><option>In Process</option></select>
-        <select class="fc" id="occFAep" onchange="occFilter()"><option value="">All AEP</option><option>Cleared</option><option>Pending</option><option>Hold</option></select>
-      </div>
-      <div id="occLoader" class="spin-wrap"><div class="spin"></div></div>
-      <div id="occTable" class="hidden"></div>
-    </div>
-
     <!-- RELOCATION PAGE -->
     <div id="relPage" class="hidden container" style="padding-top:0">
       <div class="ph"><div class="ph-row"><div><h2>Relocation Team Portal</h2><p>Final approvals, transfer orders and summary reports</p></div><button class="btn btn-s" onclick="loadAll()">↻ Refresh</button></div></div>
@@ -426,7 +412,9 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
         <div class="ferr">Required</div></div>
     </div>
     <div class="frow">
-      <div class="fg"><label class="lbl">Current Base <span class="req">*</span></label><input id="f_cbase" class="fc" placeholder="e.g. DEL" required/><div class="ferr">Required</div></div>
+      <div class="fg"><label class="lbl">Current Base <span class="req">*</span></label>
+        <select id="f_cbase" class="fc" required><option value="">Select</option><option>DEL</option><option>BOM</option><option>CCU</option><option>BLR</option><option>HYD</option><option>MAA</option><option>JAI</option><option>AMD</option><option>PNQ</option><option>COK</option><option>LKO</option><option>IXC</option><option>NMI</option><option>DXN</option></select>
+        <div class="ferr">Required</div></div>
       <div class="fg"><label class="lbl">Line Ready Date <span class="req">*</span></label><input id="f_lrd" class="fc" type="date" required/><div class="ferr">Required</div></div>
     </div>
     <div class="frow">
@@ -468,31 +456,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
     <div class="mact">
       <button class="btn btn-s" onclick="closeM('mAEP')">Cancel</button>
       <button class="btn btn-p" onclick="doAEP()">Save Update</button>
-    </div>
-  </div>
-</div>
-
-<!-- OCC Update Modal -->
-<div class="ov" id="mOCC">
-  <div class="modal">
-    <button class="mclose" onclick="closeM('mOCC')">✕</button>
-    <div class="mtitle">OCC Manpower Update</div>
-    <div class="msub" id="occMSub"></div>
-    <hr/>
-    <div class="frow">
-      <div class="fg"><label class="lbl">OCC Decision <span class="req">*</span></label>
-        <select id="o_status" class="fc"><option value="">Select</option><option>Approved</option><option>Hold</option><option>Rejected</option></select></div>
-      <div class="fg"><label class="lbl">Relocation Date</label><input id="o_date" class="fc" type="date"/></div>
-    </div>
-    <div class="fg"><label class="lbl">OCC Remarks</label><textarea id="o_rmk" class="fc" rows="2" placeholder="Slot availability, notes…"></textarea></div>
-    <div class="fg">
-      <label class="lbl">SWAP Arrangement</label>
-      <div class="flex ic gap1 mb1"><input type="checkbox" id="o_swap" onchange="this.nextElementSibling.nextElementSibling.classList.toggle('hidden',!this.checked)"/><label for="o_swap" class="text-sm">Mark as SWAP transfer</label></div>
-      <input id="o_swapiga" class="fc hidden" placeholder="IGA of swap pilot"/>
-    </div>
-    <div class="mact">
-      <button class="btn btn-s" onclick="closeM('mOCC')">Cancel</button>
-      <button class="btn btn-p" onclick="doOCC()">Save Update</button>
     </div>
   </div>
 </div>
@@ -799,13 +762,13 @@ function selRole2(r){
   $("roleCard").classList.add("hidden");
   if(r==="PILOT"){$("pilotLogin").classList.remove("hidden")}
   else{
-    $("staffTitle").textContent={AEP:"AEP Team Login",OCC:"OCC Team Login",RELOCATION:"Relocation Team Login"}[r];
+    $("staffTitle").textContent={AEP:"AEP Team Login",RELOCATION:"Relocation Team Login"}[r];
     $("staffLogin").classList.remove("hidden");
   }
 }
 // avoid naming conflict
 document.querySelectorAll(".rbtn").forEach((b,i)=>{
-  const roles=["PILOT","RELOCATION","AEP","OCC"];
+  const roles=["PILOT","RELOCATION","AEP"];
   b.onclick=()=>selRole2(roles[i]);
 });
 function backLogin(){
@@ -832,8 +795,8 @@ function startApp(){
   $("app").classList.remove("hidden");
   $("navRole").textContent=session.role;
   $("navUser").textContent=session.name+(session.iga?" ("+session.iga+")":"");
-  ["pilotPage","aepPage","occPage","relPage"].forEach(p=>$(p).classList.add("hidden"));
-  const pg={PILOT:"pilotPage",AEP:"aepPage",OCC:"occPage",RELOCATION:"relPage"}[session.role];
+  ["pilotPage","aepPage","relPage"].forEach(p=>$(p).classList.add("hidden"));
+  const pg={PILOT:"pilotPage",AEP:"aepPage",RELOCATION:"relPage"}[session.role];
   $(pg).classList.remove("hidden");
   initTabs();
   loadAll();
@@ -843,11 +806,11 @@ function startApp(){
 async function loadAll(){
   if(session.role==="PILOT"){await loadPilot()}
   else{
-    ["aepLoader","occLoader"].forEach(id=>{const el=$(id);if(el)el.classList.remove("hidden")});
+    const _aepLdr=$("aepLoader");if(_aepLdr)_aepLdr.classList.remove("hidden");
     const res=await apiGetAll();
     allData=res.data||[];
     if(session.role==="AEP"){renderAEPStats();aepFilter();$("aepLoader").classList.add("hidden")}
-    else if(session.role==="OCC"){renderOCCStats();occFilter();$("occLoader").classList.add("hidden")}
+    
     else if(session.role==="RELOCATION"){renderRelStats();prelimFilter();relFilter();relAllFilter();renderReport()}
   }
 }
@@ -889,6 +852,8 @@ function pilotCard(r){
     </div>
     ${r.PreSt?`<div class="text-xs text-m mb1">Prelim Check: ${badge(r.PreSt)} ${r.PreRmk?"· "+r.PreRmk:""}</div>`:""}
     ${r.PreSt==="Approved"&&r.AEPSt?`<div class="text-xs text-m mb1">AEP: ${badge(r.AEPSt)} ${r.AEPMonth?"· <strong>"+r.AEPMonth+"</strong>":""}</div>`:""}
+    ${r.FinalSt?`<div class="text-xs mb1" style="margin-top:3px">Final: ${badge(r.FinalSt)} ${r.ConfDate?"· 📅 <strong>"+dt(r.ConfDate)+"</strong>":""}</div>`:""}
+    ${r.FinRmk&&r.FinalSt?`<div class="al al-i text-xs mt1" style="padding:7px 10px"><span>📋</span><span><strong>Relocation note:</strong> ${r.FinRmk}</span></div>`:""}
     ${r.RDate?`<div class="text-xs mb1">📅 Relocation: <strong>${dt(r.RDate)}</strong></div>`:""}
     ${r.RejRsn?`<div class="al al-r text-xs mt1"><span>✕</span><span>${r.RejRsn}</span></div>`:""}
     <div class="flex gap1 mt2 fwrap">
@@ -918,13 +883,13 @@ function showDetail(id){
       <div><div class="text-xs text-m">Submitted</div><div>${dt(r.Sub)}</div></div>
       <div><div class="text-xs text-m">Prelim Check</div><div>${r.PreSt?badge(r.PreSt):"⏳ Pending"}</div></div>
       <div><div class="text-xs text-m">AEP Status</div><div>${r.AEPSt?badge(r.AEPSt):"—"}</div></div>
-      <div><div class="text-xs text-m">Reloc. Date</div><div>${r.RDate?dt(r.RDate):"—"}</div></div>
+      <div><div class="text-xs text-m">Reloc. Date</div><div>${r.ConfDate?dt(r.ConfDate):(r.RDate?dt(r.RDate):"—")}</div></div>
+      <div><div class="text-xs text-m">Final Decision</div><div>${r.FinalSt?badge(r.FinalSt):"—"}</div></div>
     </div>
     ${r.RejRsn?`<div class="al al-r"><span>✕</span><span>${r.RejRsn}</span></div>`:""}
     ${r.Rmk?`<div class="card mb2"><div class="ctitle">Pilot Remarks</div><p class="text-sm">${r.Rmk}</p></div>`:""}
     ${r.PreRmk?`<div class="card mb2"><div class="ctitle">Relocation Prelim Remarks</div><p class="text-sm">${r.PreRmk}</p></div>`:""}
-    ${r.AEPRmk?`<div class="card mb2"><div class="ctitle">AEP Remarks</div><p class="text-sm">${r.AEPRmk}</p></div>`:""}
-    ${r.OCCRmk?`<div class="card mb2"><div class="ctitle">OCC Remarks</div><p class="text-sm">${r.OCCRmk}</p></div>`:""}
+    ${((session.role==="RELOCATION"||session.role==="AEP")&&r.AEPRmk)?`<div class="card mb2"><div class="ctitle">AEP Remarks <span style="font-size:.68rem;color:var(--accent);margin-left:6px">🔒 Relocation Team &amp; AEP Only</span></div><p class="text-sm">${r.AEPRmk}</p></div>`:""}
     ${r.FinRmk?`<div class="card mb2"><div class="ctitle">Relocation Remarks</div><p class="text-sm">${r.FinRmk}</p></div>`:""}
   `;
   openM("mDetail");
@@ -936,7 +901,7 @@ async function doSubmit(){
   const btn=$("submitBtn");btn.disabled=true;btn.textContent="Submitting…";
   const d={
     ID:rid(),IGA:session.iga,Name:session.name,Fleet:$("f_fleet").value,
-    Desig:$("f_desig").value,CBase:$("f_cbase").value.trim().toUpperCase(),
+    Desig:$("f_desig").value,CBase:$("f_cbase").value,
     LRD:$("f_lrd").value,Sub:new Date().toISOString().split("T")[0],
     Tenure:$("f_tenure").value,RBase:$("f_rbase").value,Rmk:$("f_rmk").value,
     Email:$("f_email").value,Status:"Waitlisted",
@@ -992,86 +957,111 @@ function renderAEPStats(){
 function aepFilter(){
   const q=$("aepSrch").value, st=$("aepFSt").value;
   const rows=filt(allData,{q,status:st}).filter(r=>r.PreSt==="Approved");
+  _aepSelected={};
   if(!rows.length){$("aepTable").innerHTML=emptyState("📋","No requests","Adjust filters");return}
-  $("aepTable").innerHTML=`<div class="twrap"><table>
-    <thead><tr><th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Transfer</th><th>Tenure</th><th>Status</th><th>AEP Status</th><th>Action</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr>
-      <td class="td-id">${r.ID}</td><td class="td-id">${r.IGA}</td><td class="td-nm">${r.Name}</td>
-      <td>${r.Fleet}/${r.Desig}</td><td>${r.CBase} → <strong>${r.RBase}</strong></td>
-      <td>${tenLbl(r.Tenure)}</td><td>${badge(r.Status)}</td>
-      <td>${r.AEPSt?badge(r.AEPSt):badge("Pending")}</td>
-      <td><div class="acts">
-        <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button>
-        ${!["Approved","Rejected","Withdrawn"].includes(r.Status)?`<button class="btn btn-p btn-sm" onclick="openAEP('${r.ID}')">Update</button>`:""}
-      </div></td>
-    </tr>`).join("")}</tbody>
+  const actionableRows=rows.filter(r=>!["Approved","Rejected","Withdrawn"].includes(r.Status));
+  $("aepTable").innerHTML=`
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2)">
+      <label style="font-family:var(--font-h);font-size:.75rem;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">Bulk Action:</label>
+      <input type="checkbox" id="aepSelectAll" title="Select all actionable" onchange="toggleAepAll(this.checked)"/>
+      <label for="aepSelectAll" style="font-size:.8rem;cursor:pointer">Select All</label>
+      <button class="btn btn-g btn-sm" onclick="bulkAEP('Cleared')">✓ Bulk Cleared</button>
+      <button class="btn btn-a btn-sm" onclick="bulkAEP('Pending')">⏸ Bulk Pending</button>
+      <button class="btn btn-r btn-sm" onclick="bulkAEP('Hold')">⛔ Bulk Hold</button>
+      <span id="aepSelCount" style="font-size:.78rem;color:var(--muted);margin-left:4px">0 selected</span>
+    </div>
+    <div class="twrap" style="overflow-x:auto"><table>
+    <thead><tr><th style="width:36px"></th><th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Current Base</th><th>Req. Base</th><th>Tenure</th><th>Status</th><th>AEP Status</th><th style="min-width:380px">Action</th></tr></thead>
+    <tbody>${rows.map(r=>{
+      const canAct=!["Approved","Rejected","Withdrawn"].includes(r.Status);
+      return`<tr id="aepRow-${r.ID}">
+        <td><input type="checkbox" class="aep-chk" data-id="${r.ID}" ${canAct?"":`disabled title="Cannot act on ${r.Status} requests"`} onchange="updateAepCount()"/></td>
+        <td class="td-id">${r.ID}</td><td class="td-id">${r.IGA}</td><td class="td-nm">${r.Name}</td>
+        <td>${r.Fleet}/${r.Desig}</td>
+        <td><span class="badge b-wl" style="font-size:.75rem">${r.CBase}</span></td>
+        <td><span class="badge b-ip" style="font-size:.75rem">${r.RBase}</span></td>
+        <td>${tenLbl(r.Tenure)}</td><td>${badge(r.Status)}</td>
+        <td>${r.AEPSt?badge(r.AEPSt):badge("Pending")}</td>
+        <td>
+          <div class="acts" style="margin-bottom:4px">
+            <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button>
+            ${canAct?`
+              <button class="btn btn-g btn-sm" onclick="selectAEP('${r.ID}','Cleared')">✓ Cleared</button>
+              <button class="btn btn-a btn-sm" onclick="selectAEP('${r.ID}','Pending')">⏸ Pending</button>
+              <button class="btn btn-r btn-sm" onclick="selectAEP('${r.ID}','Hold')">⛔ Hold</button>`:""}
+          </div>
+          ${canAct?`<div id="aepPanel-${r.ID}" style="display:none;padding:8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2)">
+            <div id="aepPanelLbl-${r.ID}" style="font-family:var(--font-h);font-size:.72rem;letter-spacing:.06em;color:var(--accent);margin-bottom:6px"></div>
+            <div class="frow" style="gap:.5rem;margin-bottom:.5rem">
+              <div><label class="lbl" style="font-size:.7rem">Reloc Month</label><input id="aepM-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="e.g. July 2025" value="${r.AEPMonth||""}"/></div>
+              <div><label class="lbl" style="font-size:.7rem">Remarks (Relocation Team only 🔒)</label><input id="aepR-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="Internal remarks…" value="${r.AEPRmk||""}"/></div>
+            </div>
+            <div class="flex gap1">
+              <button class="btn btn-p btn-sm" id="aepSaveBtn-${r.ID}" onclick="saveAEP('${r.ID}')">Save</button>
+              <button class="btn btn-s btn-sm" onclick="document.getElementById('aepPanel-${r.ID}').style.display='none'">Cancel</button>
+            </div>
+          </div>`:""}
+        </td>
+      </tr>`;
+    }).join("")}</tbody>
   </table></div>`;
   $("aepTable").classList.remove("hidden");
 }
-function openAEP(id){
-  activeID=id;
+let _pendingAEPSt={}, _aepSelected={};
+function updateAepCount(){
+  const chks=document.querySelectorAll(".aep-chk:not(:disabled)");
+  let n=0;
+  chks.forEach(c=>{if(c.checked){n++;_aepSelected[c.dataset.id]=true}else{delete _aepSelected[c.dataset.id]}});
+  const el=$("aepSelCount");if(el)el.textContent=n+" selected";
+}
+function toggleAepAll(checked){
+  document.querySelectorAll(".aep-chk:not(:disabled)").forEach(c=>{c.checked=checked});
+  _aepSelected={};
+  if(checked)document.querySelectorAll(".aep-chk:not(:disabled)").forEach(c=>{_aepSelected[c.dataset.id]=true});
+  const el=$("aepSelCount");if(el)el.textContent=Object.keys(_aepSelected).length+" selected";
+}
+async function bulkAEP(status){
+  const ids=Object.keys(_aepSelected);
+  if(!ids.length){toast("Select at least one request","er");return}
+  const month=prompt(`Bulk set AEP status to "${status}" for ${ids.length} request(s).\n\nEnter Reloc Month (optional, e.g. July 2025) or leave blank:`)||"";
+  let done=0;
+  for(const id of ids){
+    const r=allData.find(x=>x.ID===id);if(!r)continue;
+    try{
+      await apiAEP({ID:id,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,
+        AEPSt:status,AEPMonth:month,AEPRmk:"",by:session.name});
+      done++;
+    }catch(e){toast("Failed for "+id,"er")}
+  }
+  _aepSelected={};
+  toast(`Bulk update done: ${done}/${ids.length} set to ${status}`,"ok");
+  await loadAll();
+}
+function selectAEP(id,status){
+  _pendingAEPSt[id]=status;
+  const p=document.getElementById("aepPanel-"+id);
+  const l=document.getElementById("aepPanelLbl-"+id);
+  if(p)p.style.display="block";
+  if(l)l.textContent="→ Setting status to: "+status;
+}
+async function saveAEP(id){
+  const st=_pendingAEPSt[id];
+  if(!st){toast("Click a status button first","er");return}
   const r=allData.find(x=>x.ID===id);
-  $("aepMSub").textContent=`${r.Name} (${r.IGA}) · ${r.RBase}`;
-  $("a_status").value=r.AEPSt||"";$("a_month").value=r.AEPMonth||"";$("a_rmk").value=r.AEPRmk||"";
-  openM("mAEP");
-}
-async function doAEP(){
-  const st=$("a_status").value;if(!st){toast("Select AEP status","er");return}
-  const r=allData.find(x=>x.ID===activeID);
+  const btn=document.getElementById("aepSaveBtn-"+id);
+  if(btn){btn.disabled=true;btn.textContent="Saving…"}
   try{
-    await apiAEP({ID:activeID,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,AEPSt:st,AEPMonth:$("a_month").value,AEPRmk:$("a_rmk").value,by:session.name});
-    closeM("mAEP");toast("AEP updated. Notifications sent.","ok");await loadAll();
-  }catch{toast("Failed","er")}
+    await apiAEP({ID:id,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,
+      AEPSt:st,
+      AEPMonth:document.getElementById("aepM-"+id)?.value||"",
+      AEPRmk:document.getElementById("aepR-"+id)?.value||"",
+      by:session.name});
+    delete _pendingAEPSt[id];
+    toast("AEP updated: "+st,"ok");await loadAll();
+  }catch{toast("Failed","er");if(btn){btn.disabled=false;btn.textContent="Save"}}
 }
-
-/* ── OCC ── */
-function renderOCCStats(){
-  const d=allData;
-  $("occStats").innerHTML=`
-    <div class="stat s-blue"><div class="slbl">Total</div><div class="sval">${d.length}</div></div>
-    <div class="stat s-orange"><div class="slbl">Awaiting OCC</div><div class="sval">${d.filter(r=>!r.OCCSt&&!["Rejected","Withdrawn"].includes(r.Status)).length}</div></div>
-    <div class="stat s-green"><div class="slbl">OCC Approved</div><div class="sval">${d.filter(r=>r.OCCSt==="Approved").length}</div></div>
-    <div class="stat s-blue"><div class="slbl">SWAPs</div><div class="sval">${d.filter(r=>r.IsSwap).length}</div><div class="ssub">Cyan rows</div></div>
-  `;
-}
-function occFilter(){
-  const q=$("occSrch").value, st=$("occFSt").value, aep=$("occFAep").value;
-  const rows=filt(allData,{q,status:st}).filter(r=>!aep||r.AEPSt===aep);
-  if(!rows.length){$("occTable").innerHTML=emptyState("🗺️","No requests","Adjust filters");return}
-  $("occTable").innerHTML=`<div class="twrap"><table>
-    <thead><tr><th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Transfer</th><th>AEP</th><th>Reloc Date</th><th>OCC</th><th>Swap</th><th>Action</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr class="${r.IsSwap?'swap-row':''}">
-      <td class="td-id">${r.ID}</td><td class="td-id">${r.IGA}</td><td class="td-nm">${r.Name}</td>
-      <td>${r.Fleet}/${r.Desig}</td><td>${r.CBase} → <strong class="text-a">${r.RBase}</strong></td>
-      <td>${r.AEPSt?badge(r.AEPSt):badge("Pending")}</td>
-      <td>${r.RDate?dt(r.RDate):"—"}</td>
-      <td>${r.OCCSt?badge(r.OCCSt):`<span class="text-m text-xs">Awaiting</span>`}</td>
-      <td>${r.IsSwap?`<span class="badge b-sw">SWAP${r.SwapIGA?" "+r.SwapIGA:""}</span>`:"—"}</td>
-      <td><div class="acts">
-        <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button>
-        ${!["Approved","Rejected","Withdrawn"].includes(r.Status)?`<button class="btn btn-p btn-sm" onclick="openOCC('${r.ID}')">Plan</button>`:""}
-      </div></td>
-    </tr>`).join("")}</tbody>
-  </table></div>`;
-  $("occTable").classList.remove("hidden");
-}
-function openOCC(id){
-  activeID=id;
-  const r=allData.find(x=>x.ID===id);
-  $("occMSub").textContent=`${r.Name} (${r.IGA}) · ${r.CBase} → ${r.RBase}`;
-  $("o_status").value=r.OCCSt||"";$("o_date").value=r.RDate||"";$("o_rmk").value=r.OCCRmk||"";
-  $("o_swap").checked=r.IsSwap||false;$("o_swapiga").value=r.SwapIGA||"";
-  $("o_swapiga").classList.toggle("hidden",!r.IsSwap);
-  openM("mOCC");
-}
-async function doOCC(){
-  const st=$("o_status").value;if(!st){toast("Select OCC decision","er");return}
-  const r=allData.find(x=>x.ID===activeID);
-  try{
-    await apiOCC({ID:activeID,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,OCCSt:st,OCCRmk:$("o_rmk").value,RDate:$("o_date").value,IsSwap:$("o_swap").checked,SwapIGA:$("o_swapiga").value,by:session.name});
-    closeM("mOCC");toast("OCC update saved. All notified.","ok");await loadAll();
-  }catch{toast("Failed","er")}
-}
+function openAEP(id){activeID=id;const r=allData.find(x=>x.ID===id);$("aepMSub").textContent=`${r.Name} (${r.IGA}) · ${r.RBase}`;$("a_status").value=r.AEPSt||"";$("a_month").value=r.AEPMonth||"";$("a_rmk").value=r.AEPRmk||"";openM("mAEP")}
+async function doAEP(){const st=$("a_status").value;if(!st){toast("Select AEP status","er");return}const r=allData.find(x=>x.ID===activeID);try{await apiAEP({ID:activeID,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,AEPSt:st,AEPMonth:$("a_month").value,AEPRmk:$("a_rmk").value,by:session.name});closeM("mAEP");toast("AEP updated.","ok");await loadAll()}catch{toast("Failed","er")}}
 
 /* ── RELOCATION PRELIM ── */
 function prelimFilter(){
@@ -1130,28 +1120,80 @@ function renderRelStats(){
   $("relStats").innerHTML=`
     <div class="stat s-blue"><div class="slbl">Total</div><div class="sval">${d.length}</div></div>
     <div class="stat s-orange"><div class="slbl">Prelim Pending</div><div class="sval">${d.filter(r=>!r.PreSt&&!["Withdrawn","Rejected"].includes(r.Status)).length}</div><div class="ssub">Need check</div></div>
-    <div class="stat s-orange"><div class="slbl">Pending Final</div><div class="sval">${d.filter(r=>r.OCCSt==="Approved"&&!r.FinalSt&&r.Status!=="Withdrawn").length}</div><div class="ssub">Need action</div></div>
+    <div class="stat s-orange"><div class="slbl">Pending Final</div><div class="sval">${d.filter(r=>r.AEPSt==="Cleared"&&!r.FinalSt&&!["Withdrawn","Rejected"].includes(r.Status)).length}</div><div class="ssub">Need action</div></div>
     <div class="stat s-green"><div class="slbl">Approved</div><div class="sval">${c["Approved"]||0}</div></div>
     <div class="stat s-red"><div class="slbl">Rejected</div><div class="sval">${c["Rejected"]||0}</div></div>
   `;
 }
 function relFilter(){
   const q=$("relSrch").value;
-  const rows=filt(allData,{q}).filter(r=>r.OCCSt==="Approved"&&!r.FinalSt&&r.Status!=="Withdrawn");
+  const rows=filt(allData,{q}).filter(r=>r.AEPSt==="Cleared"&&!r.FinalSt&&!["Withdrawn","Rejected"].includes(r.Status));
   if(!rows.length){$("relPendTable").innerHTML=emptyState("✓","No pending approvals","All requests actioned");return}
-  $("relPendTable").innerHTML=`<div class="twrap"><table>
-    <thead><tr><th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Transfer</th><th>AEP</th><th>OCC</th><th>Reloc Date</th><th>Action</th></tr></thead>
+  $("relPendTable").innerHTML=`<div class="twrap" style="overflow-x:auto"><table>
+    <thead><tr><th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Transfer</th><th>AEP Status</th><th>AEP Month</th><th>Reloc Remarks</th><th style="min-width:460px">Final Decision</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td class="td-id">${r.ID}</td><td class="td-id">${r.IGA}</td><td class="td-nm">${r.Name}</td>
       <td>${r.Fleet}/${r.Desig}</td><td>${r.CBase} → <strong class="text-a">${r.RBase}</strong></td>
-      <td>${r.AEPSt?badge(r.AEPSt):"—"}</td><td>${r.OCCSt?badge(r.OCCSt):"—"}</td>
-      <td>${r.RDate?dt(r.RDate):"—"}</td>
-      <td><div class="acts">
-        <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button>
-        <button class="btn btn-p btn-sm" onclick="openFinal('${r.ID}')">Decide</button>
-      </div></td>
+      <td>${r.AEPSt?badge(r.AEPSt):"—"}</td>
+      <td style="font-size:.8rem;color:var(--accent)">${r.AEPMonth||"—"}</td>
+      <td style="font-size:.8rem;max-width:160px;color:var(--muted)">${r.FinRmk||"<span style='color:var(--dim)'>—</span>"}</td>
+      <td>
+        <div class="acts" style="margin-bottom:4px">
+          <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button>
+          <button class="btn btn-g btn-sm" onclick="selectFinal('${r.ID}','Approved')">✓ Approve</button>
+          <button class="btn btn-r btn-sm" onclick="selectFinal('${r.ID}','Rejected')">✕ Reject</button>
+        </div>
+        <div id="finPanel-${r.ID}" style="display:none;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2)">
+          <div id="finPanelLbl-${r.ID}" style="font-family:var(--font-h);font-size:.72rem;letter-spacing:.06em;margin-bottom:8px"></div>
+          <div class="frow" style="gap:.5rem;margin-bottom:.5rem">
+            <div><label class="lbl" style="font-size:.7rem">Confirmed Reloc Date</label><input id="finD-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" type="date" value="${r.ConfDate||r.RDate||""}"/></div>
+            <div><label class="lbl" style="font-size:.7rem">RLPL Date</label><input id="finRL-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" type="date" value="${r.RLPL||""}"/></div>
+          </div>
+          <div id="finRejGrp-${r.ID}" style="display:none;margin-bottom:.5rem"><label class="lbl" style="font-size:.7rem">Rejection Reason <span class="req">*</span></label><input id="finRej-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="Reason for rejection…"/></div>
+          <div style="margin-bottom:.5rem">
+            <label class="lbl" style="font-size:.7rem">Relocation Team Remarks <span style="color:var(--dim);font-size:.65rem">(sent to Pilot)</span></label>
+            <textarea id="finRmk-${r.ID}" class="fc" rows="3" style="font-size:.8rem" placeholder="Transfer order details, instructions for pilot, relocation date confirmation…">${r.FinRmk||""}</textarea>
+          </div>
+          <div class="al al-w" style="font-size:.74rem;margin-bottom:.5rem"><span>⚠</span><span>No transfer benefits. RLPL deducted from PL/CL.</span></div>
+          <div class="flex gap1">
+            <button class="btn btn-p btn-sm" id="finSaveBtn-${r.ID}" onclick="saveFinal('${r.ID}')">Submit Decision</button>
+            <button class="btn btn-s btn-sm" onclick="document.getElementById('finPanel-${r.ID}').style.display='none'">Cancel</button>
+          </div>
+        </div>
+      </td>
     </tr>`).join("")}</tbody>
   </table></div>`;
+}
+let _pendingFinSt={};
+function selectFinal(id,status){
+  _pendingFinSt[id]=status;
+  const p=document.getElementById("finPanel-"+id);
+  const l=document.getElementById("finPanelLbl-"+id);
+  const rg=document.getElementById("finRejGrp-"+id);
+  if(p)p.style.display="block";
+  if(l){l.style.color=status==="Approved"?"var(--green)":"var(--red)";l.textContent="→ Decision: "+status}
+  if(rg)rg.style.display=status==="Rejected"?"block":"none";
+}
+async function saveFinal(id){
+  const st=_pendingFinSt[id];
+  if(!st){toast("Click Approve or Reject first","er");return}
+  const rejRsn=document.getElementById("finRej-"+id)?.value.trim()||"";
+  if(st==="Rejected"&&!rejRsn){toast("Rejection reason required","er");return}
+  const r=allData.find(x=>x.ID===id);
+  const btn=document.getElementById("finSaveBtn-"+id);
+  if(btn){btn.disabled=true;btn.textContent="Saving…"}
+  try{
+    await apiFinal({
+      ID:id,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,
+      FinalSt:st,
+      ConfDate:document.getElementById("finD-"+id)?.value||"",
+      RLPL:document.getElementById("finRL-"+id)?.value||"",
+      FinRmk:document.getElementById("finRmk-"+id)?.value||"",
+      RejRsn:rejRsn,by:session.name
+    });
+    delete _pendingFinSt[id];
+    toast("Decision: "+st+" — Pilot notified.","ok");await loadAll();
+  }catch{toast("Failed","er");if(btn){btn.disabled=false;btn.textContent="Submit Decision"}}
 }
 function relAllFilter(){
   const q=$("relAllSrch").value, st=$("relAllSt").value;
