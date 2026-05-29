@@ -251,6 +251,40 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 @media(max-width:680px){.frow,.frow3{grid-template-columns:1fr}.role-grid{grid-template-columns:1fr}}
+
+/* ── CUSTOM DATE PICKER ── */
+.dp-wrap{position:relative}
+.dp-input{cursor:pointer;user-select:none;background:var(--bg2)!important}
+.dp-input:read-only{cursor:pointer}
+.dp-cal{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:500;
+  background:var(--card);border:1px solid var(--border2);border-radius:var(--r);
+  box-shadow:0 12px 40px rgba(0,0,0,.6);width:280px;padding:0;overflow:hidden;
+  animation:calIn .15s ease;
+}
+.dp-cal.dp-right{left:auto;right:0}
+@keyframes calIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.dp-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(21,101,192,.15);border-bottom:1px solid var(--border)}
+.dp-nav{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:var(--trans)}
+.dp-nav:hover{background:var(--dim);color:var(--text)}
+.dp-title{font-family:var(--font-h);font-weight:700;font-size:.88rem;color:var(--text);cursor:pointer;padding:3px 8px;border-radius:4px;transition:var(--trans)}
+.dp-title:hover{background:var(--dim)}
+.dp-dow{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 8px 4px}
+.dp-dow span{text-align:center;font-family:var(--font-h);font-size:.65rem;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 8px 8px}
+.dp-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:.8rem;border-radius:4px;cursor:pointer;transition:var(--trans);color:var(--text);border:none;background:none;font-family:var(--font-b)}
+.dp-day:hover:not(.dp-empty):not(.dp-sel){background:var(--dim)}
+.dp-day.dp-today{border:1px solid var(--blue2);color:var(--accent)}
+.dp-day.dp-sel{background:var(--blue);color:#fff;font-weight:600;box-shadow:0 0 12px rgba(21,101,192,.4)}
+.dp-day.dp-empty{cursor:default;color:transparent;pointer-events:none}
+.dp-day.dp-om{color:var(--dim)}
+.dp-months,.dp-years{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px}
+.dp-mitem,.dp-yitem{padding:7px 4px;text-align:center;border-radius:4px;cursor:pointer;font-size:.82rem;font-family:var(--font-h);font-weight:600;transition:var(--trans);border:1px solid transparent;color:var(--text)}
+.dp-mitem:hover,.dp-yitem:hover{background:var(--dim);border-color:var(--border2)}
+.dp-mitem.dp-sel,.dp-yitem.dp-sel{background:var(--blue);color:#fff;border-color:var(--blue2)}
+.dp-yr-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-h);font-size:.8rem;color:var(--muted)}
+.dp-clear{width:100%;padding:6px;background:none;border:none;border-top:1px solid var(--border);color:var(--dim);font-size:.75rem;cursor:pointer;font-family:var(--font-b);transition:var(--trans)}
+.dp-clear:hover{color:var(--red);background:rgba(244,67,54,.06)}
 </style>
 </head>
 <body>
@@ -368,6 +402,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
           <button class="tab" onclick="switchTab(this,'rPending')">Pending Final Approval</button>
           <button class="tab" onclick="switchTab(this,'rAll')">All Requests</button>
           <button class="tab" onclick="switchTab(this,'rReport')">Summary</button>
+          <button class="tab" onclick="switchTab(this,'rFinalConf')">Final Confirmation</button>
         </div>
         <div class="tc" id="rPrelim">
           <div class="fbar"><input class="fc" id="prelSrch" placeholder="Search IGA / Name / ID…" oninput="prelimFilter()"/></div>
@@ -375,6 +410,14 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
         </div>
         <div class="tc" id="rPending">
           <div class="fbar"><input class="fc" id="relSrch" placeholder="Search…" oninput="relFilter()"/></div>
+          <!-- Bulk action toolbar -->
+          <div id="relBulkBar" style="display:none;align-items:center;gap:.6rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:8px 12px;margin-bottom:.6rem;flex-wrap:wrap">
+            <span class="bulk-count" style="font-size:.82rem;font-weight:600;color:var(--accent)">0 selected</span>
+            <span style="color:var(--dim);font-size:.8rem">·</span>
+            <button class="btn btn-g btn-sm" onclick="relBulkAction('Approved')">✓ Bulk Approve</button>
+            <button class="btn btn-r btn-sm" onclick="relBulkAction('Rejected')">✕ Bulk Reject</button>
+            <button class="btn btn-s btn-sm" onclick="relToggleAll(false);var ca=document.getElementById('relChkAll');if(ca)ca.checked=false">✕ Clear</button>
+          </div>
           <div id="relPendTable"></div>
         </div>
         <div class="tc" id="rAll">
@@ -385,7 +428,34 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
           <div id="relAllTable"></div>
         </div>
         <div class="tc" id="rReport"><div id="relReport"></div></div>
+        <div class="tc" id="rFinalConf">
+          <div class="al al-i mb2" style="margin-top:.5rem"><span>ℹ</span><span>Pilot responses to acceptance confirmations appear here. Review amendments and issue final confirmation letters.</span></div>
+          <div class="fbar"><input class="fc" id="fcSrch" placeholder="Search IGA / Name / ID…" oninput="finalConfFilter()"/><select class="fc" id="fcFlt" onchange="finalConfFilter()" style="min-width:180px"><option value="">All</option><option value="Pending">⏳ Awaiting Pilot</option><option value="Accept">✓ Accepted</option><option value="Amend">✏ Amendment Requested</option></select></div>
+          <div id="finalConfTable"></div>
+        </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Final Decision Modal -->
+<div class="ov" id="mRelBulk">
+  <div class="modal">
+    <button class="mclose" onclick="closeM('mRelBulk')">✕</button>
+    <div class="mtitle" id="relBulkTitle">Bulk Decision</div>
+    <div id="relBulkList" style="margin:.6rem 0"></div>
+    <div id="relBulkRejGrp" style="margin-bottom:.7rem">
+      <label class="lbl">Rejection Reason <span class="req">*</span></label>
+      <input id="relBulkRej" class="fc" placeholder="Reason for rejection (applies to all selected)…"/>
+    </div>
+    <div style="margin-bottom:.7rem">
+      <label class="lbl">Remarks <span style="color:var(--dim);font-size:.7rem">(optional, sent to all pilots)</span></label>
+      <textarea id="relBulkRmk" class="fc" rows="2" placeholder="Common remarks / instructions…"></textarea>
+    </div>
+    <div class="al al-w" style="font-size:.74rem;margin-bottom:.6rem"><span>⚠</span><span>This action will notify all selected pilots by email.</span></div>
+    <div class="mact">
+      <button class="btn btn-s" onclick="closeM('mRelBulk')">Cancel</button>
+      <button class="btn btn-g btn-sm" id="relBulkSubmitBtn" onclick="doRelBulk()">Confirm</button>
     </div>
   </div>
 </div>
@@ -415,7 +485,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
       <div class="fg"><label class="lbl">Current Base <span class="req">*</span></label>
         <select id="f_cbase" class="fc" required><option value="">Select</option><option>DEL</option><option>BOM</option><option>CCU</option><option>BLR</option><option>HYD</option><option>MAA</option><option>JAI</option><option>AMD</option><option>PNQ</option><option>COK</option><option>LKO</option><option>IXC</option><option>NMI</option><option>DXN</option></select>
         <div class="ferr">Required</div></div>
-      <div class="fg"><label class="lbl">Line Ready Date <span class="req">*</span></label><input id="f_lrd" class="fc" type="date" required/><div class="ferr">Required</div></div>
+      <div class="fg"><label class="lbl">Line Ready Date <span class="req">*</span></label><div class="dp-wrap"><input id="f_lrd" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'f_lrd_val')"/><input id="f_lrd_val" type="hidden"/></div><div class="ferr">Required</div></div>
     </div>
     <div class="frow">
       <div class="fg"><label class="lbl">Tenure at Current Base <span class="req">*</span></label>
@@ -476,7 +546,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
     </div>
     <div class="frow">
       <div class="fg"><label class="lbl">Current Base</label><input id="pr_cbase" class="fc" placeholder="e.g. DEL"/></div>
-      <div class="fg"><label class="lbl">Line Ready Date</label><input id="pr_lrd" class="fc" type="date"/></div>
+      <div class="fg"><label class="lbl">Line Ready Date</label><div class="dp-wrap"><input id="pr_lrd" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'pr_lrd_val')"/><input id="pr_lrd_val" type="hidden"/></div></div>
     </div>
     <div class="frow">
       <div class="fg"><label class="lbl">Tenure at Current Base</label>
@@ -512,10 +582,10 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
       <div class="fg"><label class="lbl">Decision <span class="req">*</span></label>
         <select id="fn_status" class="fc" onchange="document.getElementById('rejGrp').classList.toggle('hidden',this.value!=='Rejected')">
           <option value="">Select</option><option>Approved</option><option>Rejected</option></select></div>
-      <div class="fg"><label class="lbl">Confirmed Relocation Date</label><input id="fn_date" class="fc" type="date"/><div class="fhint">Editable before final submission</div></div>
+      <div class="fg"><label class="lbl">Confirmed Relocation Date</label><div class="dp-wrap"><input id="fn_date" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'fn_date_val')"/><input id="fn_date_val" type="hidden"/></div><div class="fhint">Editable before final submission</div></div>
     </div>
     <div class="frow">
-      <div class="fg"><label class="lbl">RLPL Adjustment Date</label><input id="fn_rlpl" class="fc" type="date"/></div>
+      <div class="fg"><label class="lbl">RLPL Adjustment Date</label><div class="dp-wrap"><input id="fn_rlpl" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'fn_rlpl_val')"/><input id="fn_rlpl_val" type="hidden"/></div></div>
       <div class="fg hidden" id="rejGrp"><label class="lbl">Rejection Reason <span class="req">*</span></label><input id="fn_rejrsn" class="fc" placeholder="Reason for rejection"/></div>
     </div>
     <div class="fg"><label class="lbl">Remarks</label><textarea id="fn_rmk" class="fc" rows="2" placeholder="Transfer order details…"></textarea></div>
@@ -540,17 +610,55 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
   </div>
 </div>
 
-<!-- Pilot Confirm Modal -->
+<!-- Pilot Confirm / Amendment Modal -->
 <div class="ov" id="mConfirm">
-  <div class="modal">
+  <div class="modal w-lg">
     <button class="mclose" onclick="closeM('mConfirm')">✕</button>
-    <div class="mtitle">Confirm Relocation Date</div>
+    <div class="mtitle">Relocation Acceptance &amp; Response</div>
     <div class="msub" id="cfMSub"></div>
-    <div class="fg"><label class="lbl">RLPL Adjustment Date Requested</label><input id="cf_rlpl" class="fc" type="date"/></div>
-    <div class="fg"><label class="lbl">Remarks</label><textarea id="cf_rmk" class="fc" rows="2" placeholder="Any remarks…"></textarea></div>
+    <hr/>
+    <div class="al al-i mb2"><span>ℹ</span><span>Review the relocation details. You may accept as-is or propose amendments. Your response goes to the Relocation Team.</span></div>
+    <div id="cfRelDetails" class="card mb2" style="background:var(--bg2)"></div>
+    <div class="fg">
+      <label class="lbl">Your Response <span class="req">*</span></label>
+      <select id="cf_response" class="fc" onchange="toggleCfAmend()">
+        <option value="">Select your decision</option>
+        <option value="Accept">✓ Accept — I confirm the relocation as per the details</option>
+        <option value="Amend">✏ Request Amendment — I have changes/concerns to raise</option>
+      </select>
+    </div>
+    <div id="cfAmendSection" class="hidden">
+      <div class="al al-w mb2"><span>⚠</span><span>Amendment request will be sent to the Relocation Team for final confirmation.</span></div>
+      <div class="frow">
+        <div class="fg">
+          <label class="lbl">Proposed Relocation Date <span style="color:var(--dim);font-size:.7rem">(if different)</span></label>
+          <div class="dp-wrap"><input id="cf_propdate" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'cf_propdate_val')"/><input id="cf_propdate_val" type="hidden"/></div>
+        </div>
+        <div class="fg">
+          <label class="lbl">RLPL Adjustment Date Requested</label>
+          <div class="dp-wrap"><input id="cf_rlpl_amend" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'cf_rlpl_amend_val')"/><input id="cf_rlpl_amend_val" type="hidden"/></div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">Amendment Details / Reason <span class="req">*</span></label>
+        <textarea id="cf_amend" class="fc" rows="3" placeholder="Describe the changes you are requesting or concerns to raise…"></textarea>
+      </div>
+    </div>
+    <div id="cfAcceptSection" class="hidden">
+      <div class="frow">
+        <div class="fg">
+          <label class="lbl">RLPL Adjustment Date Requested</label>
+          <div class="dp-wrap"><input id="cf_rlpl" class="fc dp-input" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'cf_rlpl_val')"/><input id="cf_rlpl_val" type="hidden"/></div>
+        </div>
+        <div class="fg">
+          <label class="lbl">Additional Remarks <span style="color:var(--dim);font-size:.7rem">(optional)</span></label>
+          <textarea id="cf_rmk" class="fc" rows="2" placeholder="Any remarks…" style="height:38px"></textarea>
+        </div>
+      </div>
+    </div>
     <div class="mact">
       <button class="btn btn-s" onclick="closeM('mConfirm')">Cancel</button>
-      <button class="btn btn-g" onclick="doConfirm()">Accept &amp; Confirm</button>
+      <button class="btn btn-g" id="cfSubmitBtn" onclick="doConfirm()">Submit Response →</button>
     </div>
   </div>
 </div>
@@ -599,7 +707,11 @@ async function sbUpdate(id, data) {
       body: JSON.stringify({ ...data, updated_at: new Date().toISOString() })
     }
   );
-  if (!res.ok) throw new Error("Supabase UPDATE failed: " + res.status);
+  if (!res.ok) {
+    let errMsg = "Supabase UPDATE failed: " + res.status;
+    try { const e = await res.json(); errMsg += " — " + (e.message || e.hint || JSON.stringify(e)); } catch{}
+    throw new Error(errMsg);
+  }
   return res.json();
 }
 
@@ -616,7 +728,7 @@ function mapRow(r) {
     IsSwap: r.is_swap, SwapIGA: r.swap_iga,
     FinalSt: r.final_st, ConfDate: r.conf_date, RLPL: r.rlpl,
     FinRmk: r.fin_rmk, RejRsn: r.rej_rsn, FinBy: r.fin_by,
-    PAccept: r.p_accept, PCfRmk: r.p_cf_rmk,
+    PAccept: r.p_accept, PCfRmk: r.p_cf_rmk, PResponse: r.p_response, PAmend: r.p_amend, PPropDate: r.p_prop_date,
     WRsn: r.w_rsn, WAt: r.w_at, Updated: r.updated_at
   };
 }
@@ -743,7 +855,13 @@ async function apiFinal(d) {
 
 async function apiConfirm(d) {
   await sbUpdate(d.ID, {
-    p_accept: true, p_cf_rmk: d.rmk, rlpl: d.rlpl || null
+    p_accept: d.response === "Accept",
+    p_response: d.response,
+    p_cf_rmk: d.rmk,
+    p_amend: d.amend || null,
+    p_prop_date: d.propDate || null,
+    rlpl: d.rlpl || null
+    // NOTE: final_st is owned by Relocation Team (apiFinal) — pilot must NOT write it
   });
   return { success: true };
 }
@@ -811,7 +929,7 @@ async function loadAll(){
     allData=res.data||[];
     if(session.role==="AEP"){renderAEPStats();aepFilter();$("aepLoader").classList.add("hidden")}
     
-    else if(session.role==="RELOCATION"){renderRelStats();prelimFilter();relFilter();relAllFilter();renderReport()}
+    else if(session.role==="RELOCATION"){renderRelStats();prelimFilter();relFilter();relAllFilter();renderReport();finalConfFilter()}
   }
 }
 
@@ -856,9 +974,11 @@ function pilotCard(r){
     ${r.FinRmk&&r.FinalSt?`<div class="al al-i text-xs mt1" style="padding:7px 10px"><span>📋</span><span><strong>Relocation note:</strong> ${r.FinRmk}</span></div>`:""}
     ${r.RDate?`<div class="text-xs mb1">📅 Relocation: <strong>${dt(r.RDate)}</strong></div>`:""}
     ${r.RejRsn?`<div class="al al-r text-xs mt1"><span>✕</span><span>${r.RejRsn}</span></div>`:""}
+    ${r.PResponse==="Amend"?`<div class="al al-w text-xs mt1" style="padding:7px 10px"><span>✏</span><span><strong>Amendment Requested:</strong> ${r.PAmend||""} ${r.PPropDate?"· Proposed Date: "+dt(r.PPropDate):""}</span></div>`:""}
+    ${r.PAccept?`<div class="al al-g text-xs mt1" style="padding:7px 10px"><span>✓</span><span>Relocation accepted by you. Awaiting final confirmation from Relocation Team.</span></div>`:""}
     <div class="flex gap1 mt2 fwrap">
       <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View Details</button>
-      ${needCf?`<button class="btn btn-g btn-sm" onclick="openCf('${r.ID}')">✓ Confirm Date</button>`:""}
+      ${needCf?`<button class="btn btn-g btn-sm" onclick="openCf('${r.ID}')">Respond to Acceptance →</button>`:""}
       ${canWd?`<button class="btn btn-r btn-sm" onclick="openWd('${r.ID}')">Withdraw</button>`:""}
     </div>
   </div>`;
@@ -902,7 +1022,7 @@ async function doSubmit(){
   const d={
     ID:rid(),IGA:session.iga,Name:session.name,Fleet:$("f_fleet").value,
     Desig:$("f_desig").value,CBase:$("f_cbase").value,
-    LRD:$("f_lrd").value,Sub:new Date().toISOString().split("T")[0],
+    LRD:getDateVal("f_lrd"),Sub:new Date().toISOString().split("T")[0],
     Tenure:$("f_tenure").value,RBase:$("f_rbase").value,Rmk:$("f_rmk").value,
     Email:$("f_email").value,Status:"Waitlisted",
     AEPSt:"Pending",AEPRmk:"",AEPMonth:"",AEPBy:"",
@@ -928,20 +1048,60 @@ async function doWithdraw(){
   try{await apiWithdraw({ID:activeID,IGA:r.IGA,rsn});closeM("mWithdraw");toast("Request withdrawn","in");await loadPilot()}catch{toast("Failed","er")}
 }
 
-/* ── PILOT CONFIRM ── */
+/* ── PILOT CONFIRM / AMEND ── */
+function toggleCfAmend(){
+  const v=$("cf_response").value;
+  $("cfAmendSection").classList.toggle("hidden",v!=="Amend");
+  $("cfAcceptSection").classList.toggle("hidden",v!=="Accept");
+}
 function openCf(id){
   activeID=id;
   const r=allData.find(x=>x.ID===id);
-  $("cfMSub").textContent=`Relocation Date: ${dt(r.RDate)} · Base: ${r.RBase}`;
+  $("cfMSub").textContent=`${r.Name} (${r.IGA}) · ${r.CBase} → ${r.RBase}`;
+  $("cf_response").value="";
+  $("cfAmendSection").classList.add("hidden");
+  $("cfAcceptSection").classList.add("hidden");
+  $("cfRelDetails").innerHTML=`
+    <div class="ctitle">Relocation Team Decision Details</div>
+    <div class="frow" style="margin-bottom:.5rem">
+      <div><div class="text-xs text-m">Final Decision</div><div>${r.FinalSt?badge(r.FinalSt):"—"}</div></div>
+      <div><div class="text-xs text-m">Confirmed Reloc Date</div><div class="text-a" style="font-weight:600">${dt(r.ConfDate||r.RDate)}</div></div>
+      <div><div class="text-xs text-m">Transfer Base</div><div class="text-a">${r.RBase}</div></div>
+      <div><div class="text-xs text-m">AEP Month</div><div>${r.AEPMonth||"—"}</div></div>
+    </div>
+    ${r.FinRmk?`<div style="background:var(--card);padding:8px 10px;border-radius:var(--r2);border-left:3px solid var(--accent);font-size:.82rem;margin-top:4px"><strong style="color:var(--accent)">Relocation Note:</strong> ${r.FinRmk}</div>`:""}
+  `;
+  // reset dp inputs
+  ["cf_propdate","cf_rlpl","cf_rlpl_val","cf_propdate_val","cf_rlpl_amend","cf_rlpl_amend_val"].forEach(id=>{const el=$(id);if(el)el.value=""});
+  if($("cf_amend"))$("cf_amend").value="";
+  if($("cf_rmk"))$("cf_rmk").value="";
   openM("mConfirm");
 }
 async function doConfirm(){
+  const resp=$("cf_response").value;
+  if(!resp){toast("Please select Accept or Request Amendment","er");return}
+  if(resp==="Amend"&&!$("cf_amend").value.trim()){toast("Please describe the amendment you are requesting","er");return}
   const r=allData.find(x=>x.ID===activeID);
   if(!r){toast("Request not found","er");return}
+  const rlplVal = resp==="Amend" ? ($("cf_rlpl_amend_val")||{value:""}).value : ($("cf_rlpl_val")||{value:""}).value;
+  const btn=$("cfSubmitBtn");
+  if(btn){btn.disabled=true;btn.textContent="Submitting…"}
   try{
-    await apiConfirm({ID:activeID,IGA:r.IGA,rlpl:$("cf_rlpl").value,rmk:$("cf_rmk").value});
-    closeM("mConfirm");toast("Relocation confirmed! Final email will follow.","ok");await loadPilot();
-  }catch{toast("Failed","er")}
+    await apiConfirm({
+      ID:activeID,IGA:r.IGA,
+      response:resp,
+      rlpl:rlplVal,
+      rmk:resp==="Accept"?($("cf_rmk")||{value:""}).value:"",
+      amend:resp==="Amend"?$("cf_amend").value:"",
+      propDate:resp==="Amend"?($("cf_propdate_val")||{value:""}).value:""
+    });
+    closeM("mConfirm");
+    toast(resp==="Accept"?"Relocation accepted! Relocation Team notified ✓":"Amendment request sent to Relocation Team","ok");
+    await loadPilot();
+  }catch(err){
+    toast("Submit failed — "+( err&&err.message?err.message:"please retry"),"er");
+    if(btn){btn.disabled=false;btn.textContent="Submit Response →"}
+  }
 }
 
 /* ── AEP ── */
@@ -1088,7 +1248,9 @@ function openPrelim(id){
   const r=allData.find(x=>x.ID===id);
   $("prelMSub").textContent=`${r.Name} (${r.IGA}) · Submitted ${dt(r.Sub)}`;
   $("pr_fleet").value=r.Fleet||"";$("pr_desig").value=r.Desig||"";
-  $("pr_cbase").value=r.CBase||"";$("pr_lrd").value=r.LRD||"";
+  $("pr_cbase").value=r.CBase||"";
+  if($("pr_lrd")){$("pr_lrd").value=r.LRD?formatDateDisplay(r.LRD):""}
+  if($("pr_lrd_val")){$("pr_lrd_val").value=r.LRD||""}
   $("pr_tenure").value=r.Tenure||"";$("pr_rbase").value=r.RBase||"";
   $("pr_status").value="";$("pr_rmk").value="";$("pr_rejrsn").value="";
   $("prelRejGrp").classList.add("hidden");
@@ -1106,7 +1268,7 @@ async function doPrelim(){
       by:session.name,
       Fleet:$("pr_fleet").value,Desig:$("pr_desig").value,
       CBase:$("pr_cbase").value.trim().toUpperCase(),
-      LRD:$("pr_lrd").value,Tenure:$("pr_tenure").value,RBase:$("pr_rbase").value
+      LRD:getDateVal("pr_lrd"),Tenure:$("pr_tenure").value,RBase:$("pr_rbase").value
     });
     closeM("mPrelim");
     toast(st==="Approved"?"Forwarded to AEP ✓":"Decision saved","ok");
@@ -1125,13 +1287,21 @@ function renderRelStats(){
     <div class="stat s-red"><div class="slbl">Rejected</div><div class="sval">${c["Rejected"]||0}</div></div>
   `;
 }
+/* ── PENDING FINAL APPROVAL — multi-select ── */
+let _relSelected={};
 function relFilter(){
   const q=$("relSrch").value;
   const rows=filt(allData,{q}).filter(r=>r.AEPSt==="Cleared"&&!r.FinalSt&&!["Withdrawn","Rejected"].includes(r.Status));
+  _relSelected={};
+  _updateRelBulkBar();
   if(!rows.length){$("relPendTable").innerHTML=emptyState("✓","No pending approvals","All requests actioned");return}
   $("relPendTable").innerHTML=`<div class="twrap" style="overflow-x:auto"><table>
-    <thead><tr><th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Transfer</th><th>AEP Status</th><th>AEP Month</th><th>Reloc Remarks</th><th style="min-width:460px">Final Decision</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr>
+    <thead><tr>
+      <th style="width:36px"><input type="checkbox" id="relChkAll" onclick="relToggleAll(this.checked)" title="Select all"/></th>
+      <th>ID</th><th>IGA</th><th>Pilot</th><th>Fleet</th><th>Transfer</th><th>AEP Status</th><th>AEP Month</th><th>Reloc Remarks</th><th style="min-width:460px">Final Decision</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>`<tr id="relRow-${r.ID}">
+      <td style="text-align:center"><input type="checkbox" class="rel-chk" data-id="${r.ID}" onchange="relToggleOne('${r.ID}',this.checked)"/></td>
       <td class="td-id">${r.ID}</td><td class="td-id">${r.IGA}</td><td class="td-nm">${r.Name}</td>
       <td>${r.Fleet}/${r.Desig}</td><td>${r.CBase} → <strong class="text-a">${r.RBase}</strong></td>
       <td>${r.AEPSt?badge(r.AEPSt):"—"}</td>
@@ -1146,8 +1316,8 @@ function relFilter(){
         <div id="finPanel-${r.ID}" style="display:none;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2)">
           <div id="finPanelLbl-${r.ID}" style="font-family:var(--font-h);font-size:.72rem;letter-spacing:.06em;margin-bottom:8px"></div>
           <div class="frow" style="gap:.5rem;margin-bottom:.5rem">
-            <div><label class="lbl" style="font-size:.7rem">Confirmed Reloc Date</label><input id="finD-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" type="date" value="${r.ConfDate||r.RDate||""}"/></div>
-            <div><label class="lbl" style="font-size:.7rem">RLPL Date</label><input id="finRL-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" type="date" value="${r.RLPL||""}"/></div>
+            <div><label class="lbl" style="font-size:.7rem">Confirmed Reloc Date</label><div class="dp-wrap"><input id="finD-${r.ID}" class="fc dp-input" style="padding:5px 8px;font-size:.8rem" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'finD-${r.ID}_val')"/><input id="finD-${r.ID}_val" type="hidden" value="${r.ConfDate||r.RDate||''}"/></div></div>
+            <div><label class="lbl" style="font-size:.7rem">RLPL Date</label><div class="dp-wrap"><input id="finRL-${r.ID}" class="fc dp-input" style="padding:5px 8px;font-size:.8rem" type="text" readonly placeholder="Pick a date" onclick="openDP(this,'finRL-${r.ID}_val')"/><input id="finRL-${r.ID}_val" type="hidden" value="${r.RLPL||''}"/></div></div>
           </div>
           <div id="finRejGrp-${r.ID}" style="display:none;margin-bottom:.5rem"><label class="lbl" style="font-size:.7rem">Rejection Reason <span class="req">*</span></label><input id="finRej-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="Reason for rejection…"/></div>
           <div style="margin-bottom:.5rem">
@@ -1164,6 +1334,81 @@ function relFilter(){
     </tr>`).join("")}</tbody>
   </table></div>`;
 }
+function relToggleOne(id,checked){
+  if(checked)_relSelected[id]=true;else delete _relSelected[id];
+  _updateRelBulkBar();
+}
+function relToggleAll(checked){
+  document.querySelectorAll(".rel-chk").forEach(cb=>{
+    cb.checked=checked;
+    const id=cb.dataset.id;
+    if(checked)_relSelected[id]=true;else delete _relSelected[id];
+  });
+  _updateRelBulkBar();
+}
+function _updateRelBulkBar(){
+  const bar=$("relBulkBar");if(!bar)return;
+  const ids=Object.keys(_relSelected);
+  if(ids.length>0){
+    bar.style.display="flex";
+    const lbl=bar.querySelector(".bulk-count");
+    if(lbl)lbl.textContent=ids.length+" selected";
+  }else{
+    bar.style.display="none";
+  }
+}
+function relBulkAction(action){
+  const ids=Object.keys(_relSelected);
+  if(!ids.length){toast("Select at least one request","er");return}
+  if(action==="Approved"){
+    openRelBulkModal("Approved",ids);
+  }else{
+    openRelBulkModal("Rejected",ids);
+  }
+}
+let _relBulkIds=[];let _relBulkAction="";
+function openRelBulkModal(action,ids){
+  _relBulkIds=ids;_relBulkAction=action;
+  const m=$("mRelBulk");if(!m)return;
+  const isApprove=action==="Approved";
+  $("relBulkTitle").textContent=isApprove?`Bulk Approve (${ids.length} requests)`:`Bulk Reject (${ids.length} requests)`;
+  $("relBulkSubmitBtn").className="btn btn-sm "+(isApprove?"btn-g":"btn-r");
+  $("relBulkSubmitBtn").textContent=isApprove?"✓ Confirm Approve All":"✕ Confirm Reject All";
+  $("relBulkRejGrp").style.display=isApprove?"none":"block";
+  $("relBulkRej").value="";$("relBulkRmk").value="";
+  const list=$("relBulkList");
+  const names=ids.map(id=>{const r=allData.find(x=>x.ID===id);return r?`<span style="font-size:.8rem;background:var(--bg2);padding:2px 7px;border-radius:var(--r2);border:1px solid var(--border)">${r.IGA} – ${r.Name}</span>`:""}).join("");
+  list.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${names}</div>`;
+  openM("mRelBulk");
+}
+async function doRelBulk(){
+  const isApprove=_relBulkAction==="Approved";
+  const rej=$("relBulkRej").value.trim();
+  if(!isApprove&&!rej){toast("Rejection reason required","er");return}
+  const rmk=$("relBulkRmk").value.trim();
+  const btn=$("relBulkSubmitBtn");
+  if(btn){btn.disabled=true;btn.textContent="Saving…"}
+  let ok=0,fail=0;
+  for(const id of _relBulkIds){
+    const r=allData.find(x=>x.ID===id);if(!r)continue;
+    try{
+      await apiFinal({
+        ID:id,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,
+        FinalSt:_relBulkAction,
+        ConfDate:r.ConfDate||r.RDate||"",
+        RLPL:r.RLPL||"",
+        FinRmk:rmk,
+        RejRsn:isApprove?"":rej,
+        by:session.name
+      });ok++;
+    }catch{fail++}
+  }
+  closeM("mRelBulk");
+  _relSelected={};
+  if(btn){btn.disabled=false;}
+  toast(`${ok} request(s) ${_relBulkAction}${fail?` · ${fail} failed`:""}. Pilots notified.`,"ok");
+  await loadAll();
+}
 let _pendingFinSt={};
 function selectFinal(id,status){
   _pendingFinSt[id]=status;
@@ -1173,6 +1418,19 @@ function selectFinal(id,status){
   if(p)p.style.display="block";
   if(l){l.style.color=status==="Approved"?"var(--green)":"var(--red)";l.textContent="→ Decision: "+status}
   if(rg)rg.style.display=status==="Rejected"?"block":"none";
+  // Pre-fill display values for date picker inputs
+  const r=allData.find(x=>x.ID===id);
+  if(r){
+    const dDisp=document.getElementById("finD-"+id);
+    const dHid=document.getElementById("finD-"+id+"_val");
+    if(dDisp&&dHid&&dHid.value&&!dDisp.value){dDisp.value=formatDateDisplay(dHid.value)}
+    // wire up onclick dynamically for template-rendered inputs
+    if(dDisp)dDisp.setAttribute("onclick","openDP(this,'finD-"+id+"_val')");
+    const rDisp=document.getElementById("finRL-"+id);
+    const rHid=document.getElementById("finRL-"+id+"_val");
+    if(rDisp&&rHid&&rHid.value&&!rDisp.value){rDisp.value=formatDateDisplay(rHid.value)}
+    if(rDisp)rDisp.setAttribute("onclick","openDP(this,'finRL-"+id+"_val')");
+  }
 }
 async function saveFinal(id){
   const st=_pendingFinSt[id];
@@ -1186,8 +1444,8 @@ async function saveFinal(id){
     await apiFinal({
       ID:id,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,
       FinalSt:st,
-      ConfDate:document.getElementById("finD-"+id)?.value||"",
-      RLPL:document.getElementById("finRL-"+id)?.value||"",
+      ConfDate:(document.getElementById("finD-"+id+"_val")||document.getElementById("finD-"+id))?.value||"",
+      RLPL:(document.getElementById("finRL-"+id+"_val")||document.getElementById("finRL-"+id))?.value||"",
       FinRmk:document.getElementById("finRmk-"+id)?.value||"",
       RejRsn:rejRsn,by:session.name
     });
@@ -1206,7 +1464,7 @@ function relAllFilter(){
       <td>${r.Fleet}/${r.Desig}</td><td>${r.CBase} → <strong>${r.RBase}</strong></td>
       <td>${badge(r.Status)}</td><td>${r.FinalSt?badge(r.FinalSt):"—"}</td>
       <td>${r.ConfDate?dt(r.ConfDate):"—"}</td>
-      <td>${r.PAccept?`<span class="text-g">✓ Yes</span>`:"—"}</td>
+      <td>${r.PResponse==="Accept"?`<span class="text-g">✓ Accepted</span>`:r.PResponse==="Amend"?`<span class="text-a">✏ Amendment</span>`:"—"}</td>
       <td><button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button></td>
     </tr>`).join("")}</tbody>
   </table></div>`;
@@ -1241,8 +1499,15 @@ function openFinal(id){
   activeID=id;
   const r=allData.find(x=>x.ID===id);
   $("finMSub").textContent=`${r.Name} (${r.IGA}) · ${r.CBase} → ${r.RBase}`;
-  $("fn_status").value=r.FinalSt||"";$("fn_date").value=r.ConfDate||r.RDate||"";
-  $("fn_rlpl").value=r.RLPL||"";$("fn_rmk").value=r.FinRmk||"";$("fn_rejrsn").value=r.RejRsn||"";
+  $("fn_status").value=r.FinalSt||"";
+  // dp inputs
+  const fnDate=r.ConfDate||r.RDate||"";
+  if($("fn_date")){$("fn_date").value=fnDate?formatDateDisplay(fnDate):""}
+  if($("fn_date_val")){$("fn_date_val").value=fnDate}
+  const fnRlpl=r.RLPL||"";
+  if($("fn_rlpl")){$("fn_rlpl").value=fnRlpl?formatDateDisplay(fnRlpl):""}
+  if($("fn_rlpl_val")){$("fn_rlpl_val").value=fnRlpl}
+  $("fn_rmk").value=r.FinRmk||"";$("fn_rejrsn").value=r.RejRsn||"";
   $("rejGrp").classList.add("hidden");
   openM("mFinal");
 }
@@ -1251,12 +1516,253 @@ async function doFinal(){
   if(st==="Rejected"&&!$("fn_rejrsn").value.trim()){toast("Rejection reason required","er");return}
   const r=allData.find(x=>x.ID===activeID);
   try{
-    await apiFinal({ID:activeID,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,FinalSt:st,ConfDate:$("fn_date").value,RLPL:$("fn_rlpl").value,FinRmk:$("fn_rmk").value,RejRsn:$("fn_rejrsn").value,by:session.name});
+    await apiFinal({ID:activeID,IGA:r.IGA,pilotEmail:r.Email,pilotName:r.Name,FinalSt:st,ConfDate:getDateVal("fn_date"),RLPL:getDateVal("fn_rlpl"),FinRmk:$("fn_rmk").value,RejRsn:$("fn_rejrsn").value,by:session.name});
     closeM("mFinal");toast("Decision: "+st+" — Pilot and teams notified.","ok");await loadAll();
   }catch{toast("Failed","er")}
 }
 
 function emptyState(icon,h,p){return`<div class="empty"><div class="ei">${icon}</div><h3>${h}</h3><p>${p}</p></div>`}
+
+/* ── FINAL CONFIRMATION TAB (Relocation Team) ── */
+function finalConfFilter(){
+  const q=($("fcSrch")||{value:""}).value;
+  const flt=($("fcFlt")||{value:""}).value;
+  // Show all requests where pilot has responded (PResponse set) OR FinalSt=Approved waiting for pilot
+  // Key fix: do NOT require FinalSt="Approved" — apiConfirm writes p_response/p_accept on the same row
+  // So filter: FinalSt=Approved (set by relocation team via saveFinal) AND pilot has responded (PResponse set)
+  // ALSO include: FinalSt=Approved AND no PResponse yet (pilot pending) — shown as "Awaiting Pilot"
+  let rows=allData.filter(r=>r.FinalSt==="Approved"&&!["Withdrawn","Rejected"].includes(r.Status));
+  if(q){const s=q.toLowerCase();rows=rows.filter(r=>(r.IGA||"").toLowerCase().includes(s)||(r.Name||"").toLowerCase().includes(s)||(r.ID||"").toLowerCase().includes(s))}
+  if(flt==="Accept")rows=rows.filter(r=>r.PResponse==="Accept");
+  else if(flt==="Amend")rows=rows.filter(r=>r.PResponse==="Amend");
+  else if(flt==="Pending")rows=rows.filter(r=>!r.PResponse);
+  const el=$("finalConfTable");if(!el)return;
+  if(!rows.length){el.innerHTML=emptyState("📬","No final approvals yet","Requests approved by Relocation Team will appear here");return}
+  el.innerHTML=`<div class="twrap"><table>
+    <thead><tr>
+      <th>ID</th><th>IGA</th><th>Pilot</th><th>Transfer</th><th>Conf Date</th>
+      <th>Pilot Response</th><th>Amendment Details</th><th>Proposed Date</th><th>RLPL Req.</th><th>Action</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>{
+      const hasFinalLetter=r.PAccept===true&&r.FinRmk&&r.ConfDate; // p_accept true + letter already sent
+      const responded=!!r.PResponse;
+      return`<tr class="${r.PResponse==="Amend"?"swap-row":""}">
+        <td class="td-id">${r.ID}</td>
+        <td class="td-id">${r.IGA}</td>
+        <td class="td-nm">${r.Name}</td>
+        <td>${r.CBase} → <strong class="text-a">${r.RBase}</strong></td>
+        <td style="color:var(--accent)">${dt(r.ConfDate||r.RDate)}</td>
+        <td>${
+          !responded
+            ?`<span class="badge b-wl">⏳ Awaiting Pilot</span>`
+            :r.PResponse==="Accept"
+              ?`<span class="badge b-ap">✓ Accepted</span>`
+              :`<span class="badge b-amber" style="background:rgba(245,158,11,.15);color:var(--amber)">✏ Amendment</span>`
+        }</td>
+        <td style="max-width:200px;font-size:.82rem;color:${r.PResponse==="Amend"?"var(--amber)":"var(--dim)"}">${r.PAmend||r.PCfRmk||"—"}</td>
+        <td style="color:var(--accent2)">${r.PPropDate?dt(r.PPropDate):"—"}</td>
+        <td style="font-size:.82rem">${r.RLPL?dt(r.RLPL):"—"}</td>
+        <td>
+          <div class="acts">
+            <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View</button>
+            ${!responded
+              ?`<span class="text-m text-xs">Awaiting pilot response</span>`
+              :hasFinalLetter
+                ?`<span class="text-g text-xs">✓ Letter Sent</span>`
+                :`<button class="btn ${r.PResponse==="Amend"?"btn-a":"btn-g"} btn-sm" onclick="openFinalConfAck('${r.ID}')">${r.PResponse==="Amend"?"Issue Final Letter":"✓ Send Confirmation"}</button>`
+            }
+          </div>
+          <div id="fcAckPanel-${r.ID}" style="display:none;margin-top:6px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2)">
+            <div class="ctitle" style="font-size:.68rem;margin-bottom:6px">
+              ${r.PResponse==="Amend"?"ISSUE FINAL CONFIRMATION LETTER (AMENDMENT REVIEWED)":"SEND FINAL CONFIRMATION TO PILOT"}
+            </div>
+            ${r.PResponse==="Amend"?`<div class="al al-w" style="font-size:.75rem;margin-bottom:.6rem"><span>✏</span><span><strong>Pilot Amendment:</strong> ${r.PAmend||"—"} ${r.PPropDate?"· Proposed Date: "+dt(r.PPropDate):""}</span></div>`:""}
+            <div class="frow" style="gap:.5rem;margin-bottom:.5rem">
+              <div><label class="lbl" style="font-size:.7rem">Final Confirmed Date</label>
+                <div class="dp-wrap"><input id="fca_date-${r.ID}" class="fc dp-input" type="text" style="padding:5px 8px;font-size:.8rem" readonly placeholder="Pick date" onclick="openDP(this,'fca_date_val-${r.ID}')"/><input id="fca_date_val-${r.ID}" type="hidden" value="${r.PPropDate||r.ConfDate||""}"/></div>
+              </div>
+              <div><label class="lbl" style="font-size:.7rem">RLPL Adjustment Date</label>
+                <div class="dp-wrap"><input id="fca_rlpl-${r.ID}" class="fc dp-input" type="text" style="padding:5px 8px;font-size:.8rem" readonly placeholder="Pick date" onclick="openDP(this,'fca_rlpl_val-${r.ID}')"/><input id="fca_rlpl_val-${r.ID}" type="hidden" value="${r.RLPL||""}"/></div>
+              </div>
+            </div>
+            <div style="margin-bottom:.5rem"><label class="lbl" style="font-size:.7rem">Final Remarks / Instructions</label>
+              <textarea id="fca_rmk-${r.ID}" class="fc" rows="2" style="font-size:.8rem" placeholder="Final confirmation letter remarks to pilot…">${r.FinRmk||""}</textarea>
+            </div>
+            <div class="flex gap1">
+              <button class="btn btn-p btn-sm" onclick="saveFinalConfAck('${r.ID}')">Send Final Confirmation</button>
+              <button class="btn btn-s btn-sm" onclick="document.getElementById('fcAckPanel-${r.ID}').style.display='none'">Cancel</button>
+            </div>
+          </div>
+        </td>
+      </tr>`}).join("")}
+    </tbody></table></div>`;
+}
+function openFinalConfAck(id){
+  const p=document.getElementById("fcAckPanel-"+id);
+  if(p)p.style.display=p.style.display==="none"?"block":"none";
+  // pre-fill display fields from hidden values
+  const r=allData.find(x=>x.ID===id);
+  if(r){
+    const dEl=document.getElementById("fca_date-"+id);
+    const dValEl=document.getElementById("fca_date_val-"+id);
+    if(dEl&&dValEl&&dValEl.value&&!dEl.value){dEl.value=formatDateDisplay(dValEl.value)}
+    const rEl=document.getElementById("fca_rlpl-"+id);
+    const rValEl=document.getElementById("fca_rlpl_val-"+id);
+    if(rEl&&rValEl&&rValEl.value&&!rEl.value){rEl.value=formatDateDisplay(rValEl.value)}
+  }
+}
+async function saveFinalConfAck(id){
+  const r=allData.find(x=>x.ID===id);
+  const finalDate=document.getElementById("fca_date_val-"+id)?.value||"";
+  const rlpl=document.getElementById("fca_rlpl_val-"+id)?.value||"";
+  const rmk=document.getElementById("fca_rmk-"+id)?.value||"";
+  try{
+    await sbUpdate(id,{conf_date:finalDate||null,rlpl:rlpl||null,fin_rmk:rmk,p_accept:true});
+    toast("Final confirmation letter sent to pilot ✓","ok");
+    document.getElementById("fcAckPanel-"+id).style.display="none";
+    await loadAll();
+  }catch{toast("Failed to save","er")}
+}
+
+/* ══════════════════════════════════════════════
+   CUSTOM DATE PICKER ENGINE
+══════════════════════════════════════════════ */
+let _dpTarget=null,_dpHiddenId=null,_dpView="days",_dpYear=0,_dpMonth=0,_dpYearPage=0;
+const _MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const _DOW=["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+function formatDateDisplay(val){
+  if(!val)return"";
+  try{
+    const d=new Date(val+"T00:00:00");
+    return d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+  }catch{return val}
+}
+
+function openDP(inputEl,hiddenId){
+  // close any open picker first
+  document.querySelectorAll(".dp-cal").forEach(c=>c.remove());
+  _dpTarget=inputEl;_dpHiddenId=hiddenId;_dpView="days";
+  const hiddenEl=document.getElementById(hiddenId);
+  const today=new Date();
+  if(hiddenEl&&hiddenEl.value){
+    try{const d=new Date(hiddenEl.value+"T00:00:00");_dpYear=d.getFullYear();_dpMonth=d.getMonth();}
+    catch{_dpYear=today.getFullYear();_dpMonth=today.getMonth()}
+  } else {_dpYear=today.getFullYear();_dpMonth=today.getMonth()}
+  _dpYearPage=Math.floor(_dpYear/12)*12;
+  _renderDP();
+}
+
+function _renderDP(){
+  document.querySelectorAll(".dp-cal").forEach(c=>c.remove());
+  const cal=document.createElement("div");
+  cal.className="dp-cal";
+  
+  // Detect if needs to open upward or to the right
+  const rect=_dpTarget.getBoundingClientRect();
+  if(rect.left+280>window.innerWidth)cal.classList.add("dp-right");
+
+  if(_dpView==="days") cal.innerHTML=_daysHTML();
+  else if(_dpView==="months") cal.innerHTML=_monthsHTML();
+  else cal.innerHTML=_yearsHTML();
+
+  _dpTarget.parentElement.appendChild(cal);
+  setTimeout(()=>document.addEventListener("click",_dpOutsideClick,{once:true}),10);
+}
+
+function _daysHTML(){
+  const today=new Date();
+  const hiddenEl=document.getElementById(_dpHiddenId);
+  let selY=0,selM=-1,selD=-1;
+  if(hiddenEl&&hiddenEl.value){
+    try{const d=new Date(hiddenEl.value+"T00:00:00");selY=d.getFullYear();selM=d.getMonth();selD=d.getDate()}catch{}
+  }
+  const firstDay=new Date(_dpYear,_dpMonth,1).getDay();
+  const daysInMonth=new Date(_dpYear,_dpMonth+1,0).getDate();
+  const daysInPrev=new Date(_dpYear,_dpMonth,0).getDate();
+  let cells="";
+  // prev month overflow
+  for(let i=firstDay-1;i>=0;i--)cells+=`<button class="dp-day dp-om dp-empty">${daysInPrev-i}</button>`;
+  // current month
+  for(let d=1;d<=daysInMonth;d++){
+    const isSel=selY===_dpYear&&selM===_dpMonth&&selD===d;
+    const isTdy=today.getFullYear()===_dpYear&&today.getMonth()===_dpMonth&&today.getDate()===d;
+    cells+=`<button class="dp-day${isSel?" dp-sel":""}${isTdy?" dp-today":""}" onclick="_dpSelect(${d})">${d}</button>`;
+  }
+  // next month fill
+  const remaining=(7-((firstDay+daysInMonth)%7))%7;
+  for(let d=1;d<=remaining;d++)cells+=`<button class="dp-day dp-om dp-empty">${d}</button>`;
+  
+  return`
+    <div class="dp-head">
+      <button class="dp-nav" onclick="_dpPrev()">‹</button>
+      <span class="dp-title" onclick="_dpView='months';_renderDP()">${_MONTHS[_dpMonth]} ${_dpYear}</span>
+      <button class="dp-nav" onclick="_dpNext()">›</button>
+    </div>
+    <div class="dp-dow">${_DOW.map(d=>`<span>${d}</span>`).join("")}</div>
+    <div class="dp-days">${cells}</div>
+    <button class="dp-clear" onclick="_dpClear()">Clear date</button>`;
+}
+
+function _monthsHTML(){
+  return`
+    <div class="dp-head">
+      <button class="dp-nav" onclick="_dpYear--;_renderDP()">‹</button>
+      <span class="dp-title" onclick="_dpView='years';_renderDP()">${_dpYear}</span>
+      <button class="dp-nav" onclick="_dpYear++;_renderDP()">›</button>
+    </div>
+    <div class="dp-months">${_MONTHS.map((m,i)=>`<div class="dp-mitem${i===_dpMonth?" dp-sel":""}" onclick="_dpMonth=${i};_dpView='days';_renderDP()">${m.slice(0,3)}</div>`).join("")}</div>`;
+}
+
+function _yearsHTML(){
+  const start=Math.floor(_dpYear/12)*12;
+  let items="";
+  for(let y=start;y<start+12;y++)items+=`<div class="dp-yitem${y===_dpYear?" dp-sel":""}" onclick="_dpYear=${y};_dpView='months';_renderDP()">${y}</div>`;
+  return`
+    <div class="dp-head">
+      <button class="dp-nav" onclick="_dpYear-=12;_renderDP()">‹</button>
+      <span class="dp-title">${start} – ${start+11}</span>
+      <button class="dp-nav" onclick="_dpYear+=12;_renderDP()">›</button>
+    </div>
+    <div class="dp-years">${items}</div>`;
+}
+
+function _dpSelect(day){
+  const d=new Date(_dpYear,_dpMonth,day);
+  const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  if(_dpTarget)_dpTarget.value=formatDateDisplay(iso);
+  const hiddenEl=document.getElementById(_dpHiddenId);
+  if(hiddenEl)hiddenEl.value=iso;
+  document.querySelectorAll(".dp-cal").forEach(c=>c.remove());
+  _dpTarget=null;
+}
+
+function _dpClear(){
+  if(_dpTarget)_dpTarget.value="";
+  const hiddenEl=document.getElementById(_dpHiddenId);
+  if(hiddenEl)hiddenEl.value="";
+  document.querySelectorAll(".dp-cal").forEach(c=>c.remove());
+  _dpTarget=null;
+}
+
+function _dpPrev(){if(_dpMonth===0){_dpMonth=11;_dpYear--}else _dpMonth--;_renderDP()}
+function _dpNext(){if(_dpMonth===11){_dpMonth=0;_dpYear++}else _dpMonth++;_renderDP()}
+
+function _dpOutsideClick(e){
+  if(!e.target.closest(".dp-cal")&&!e.target.classList.contains("dp-input")&&!e.target.classList.contains("dp-nav")&&!e.target.classList.contains("dp-title")){
+    document.querySelectorAll(".dp-cal").forEach(c=>c.remove());_dpTarget=null;
+  } else if(document.querySelector(".dp-cal")){
+    document.addEventListener("click",_dpOutsideClick,{once:true});
+  }
+}
+
+// Patch all date-value reads to use hidden input values
+function getDateVal(id){
+  const hiddenEl=document.getElementById(id+"_val");
+  if(hiddenEl!==null)return hiddenEl.value||"";
+  const el=document.getElementById(id);
+  return el?el.value||"":"";
+}
 </script>
 </body>
 </html>
