@@ -307,7 +307,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
       <p class="hint">Choose your portal to continue</p>
       <div class="role-grid">
         <button class="rbtn" onclick="selRole('PILOT')"><span class="ri">👨‍✈️</span><span class="rl">Pilot</span><span class="rd">Submit &amp; track requests</span></button>
-        <button class="rbtn" onclick="selRole('RELOCATION')"><span class="ri">🏢</span><span class="rl">Relocation Team</span><span class="rd">Final approvals</span></button>
+        <button class="rbtn" onclick="selRole('RELOCATION')"><span class="ri">🏢</span><span class="rl">Pilot Admin Team</span><span class="rd">Final approvals</span></button>
         <button class="rbtn" onclick="selRole('AEP')"><span class="ri">📋</span><span class="rl">AEP Team</span><span class="rd">Review AEP status</span></button>
       </div>
     </div>
@@ -368,10 +368,10 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
             <div class="ctitle">ADHOC Relocation Process</div>
             <div class="tl">
               <div class="ts"><div class="dot act">1</div><div><div class="ts-title">Pilot Submits Request</div><div class="ts-meta">Status → Waitlisted · Auto-confirmation email sent</div><div class="ts-rem">No transfer benefits for ADHOC. RLPL deducted from PL/CL.</div></div></div>
-              <div class="ts"><div class="dot">2</div><div><div class="ts-title">Relocation Team — Preliminary check</div><div class="ts-meta">Initial eligibility review · Pilot details verified &amp; corrected if needed</div><div class="ts-rem">Relocation team can edit Fleet, Designation, Base, Tenure, LRD before forwarding to AEP.</div></div></div>
+              <div class="ts"><div class="dot">2</div><div><div class="ts-title">Pilot Admin Team — Preliminary check</div><div class="ts-meta">Initial eligibility review · Pilot details verified &amp; corrected if needed</div><div class="ts-rem">Pilot Admin Team can edit Fleet, Designation, Base, Tenure, LRD before forwarding to AEP.</div></div></div>
               <div class="ts"><div class="dot">3</div><div><div class="ts-title">AEP Team Review</div><div class="ts-meta">Eligibility &amp; AEP clearance check · Status → In Process</div><div class="ts-rem">AEP team verifies documents and provides tentative relocation month.</div></div></div>
               <div class="ts"><div class="dot">4</div><div><div class="ts-title">OCC Manpower Planning</div><div class="ts-meta">Vacancy check at requested base · SWAPs arranged if needed</div></div></div>
-              <div class="ts"><div class="dot">5</div><div><div class="ts-title">Relocation Team — Final Approval</div><div class="ts-meta">Transfer order issued · Status → Approved / Rejected</div><div class="ts-rem">AEP clearance mandatory before final approval.</div></div></div>
+              <div class="ts"><div class="dot">5</div><div><div class="ts-title">Pilot Admin Team — Final Approval</div><div class="ts-meta">Transfer order issued · Status → Approved / Rejected</div><div class="ts-rem">AEP clearance mandatory before final approval.</div></div></div>
               <div class="ts"><div class="dot">6</div><div><div class="ts-title">Pilot Confirmation</div><div class="ts-meta">Accept relocation date · RLPL adjustment processed</div></div></div>
             </div>
             <div class="al al-w"><span>⚠</span><span>You may withdraw at any stage before final approval. Cancellation after approval requires a mandatory reason.</span></div>
@@ -394,7 +394,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
 
     <!-- RELOCATION PAGE -->
     <div id="relPage" class="hidden container" style="padding-top:0">
-      <div class="ph"><div class="ph-row"><div><h2>Relocation Team Portal</h2><p>Final approvals, transfer orders and summary reports</p></div><button class="btn btn-s" onclick="loadAll()">↻ Refresh</button></div></div>
+      <div class="ph"><div class="ph-row"><div><h2>Pilot Admin Team Portal</h2><p>Final approvals, transfer orders and summary reports</p></div><button class="btn btn-s" onclick="loadAll()">↻ Refresh</button></div></div>
       <div class="stats" id="relStats"></div>
       <div>
         <div class="tabs">
@@ -617,7 +617,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
     <div class="mtitle">Relocation Acceptance &amp; Response</div>
     <div class="msub" id="cfMSub"></div>
     <hr/>
-    <div class="al al-i mb2"><span>ℹ</span><span>Review the relocation details. You may accept as-is or propose amendments. Your response goes to the Relocation Team.</span></div>
+    <div class="al al-i mb2"><span>ℹ</span><span>Review the relocation details. You may accept as-is or propose amendments. Your response goes to the Pilot Admin Team.</span></div>
     <div id="cfRelDetails" class="card mb2" style="background:var(--bg2)"></div>
     <div class="fg">
       <label class="lbl">Your Response <span class="req">*</span></label>
@@ -628,7 +628,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
       </select>
     </div>
     <div id="cfAmendSection" class="hidden">
-      <div class="al al-w mb2"><span>⚠</span><span>Amendment request will be sent to the Relocation Team for final confirmation.</span></div>
+      <div class="al al-w mb2"><span>⚠</span><span>Amendment request will be sent to the Pilot Admin Team for final confirmation.</span></div>
       <div class="frow">
         <div class="fg">
           <label class="lbl">Proposed Relocation Date <span style="color:var(--dim);font-size:.7rem">(if different)</span></label>
@@ -670,6 +670,7 @@ hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
 /* ── SUPABASE CONFIG ── replace with your actual values ── */
 const SUPABASE_URL = "https://tvourlznusycvajmmvry.supabase.co";
 const SUPABASE_KEY = "sb_publishable_PJmewPH4FpzTigm1XfSJdQ_MN5Dak7w";
+
 
 const SB = {
   headers: {
@@ -728,7 +729,11 @@ function mapRow(r) {
     IsSwap: r.is_swap, SwapIGA: r.swap_iga,
     FinalSt: r.final_st, ConfDate: r.conf_date, RLPL: r.rlpl,
     FinRmk: r.fin_rmk, RejRsn: r.rej_rsn, FinBy: r.fin_by,
-    PAccept: r.p_accept, PCfRmk: r.p_cf_rmk, PResponse: r.p_response, PAmend: r.p_amend, PPropDate: r.p_prop_date,
+    PAccept: r.p_accept, PResponse: r.p_response,
+    // p_amend/p_cf_rmk/p_prop_date columns don't exist in DB — parse from rmk when PResponse=Amend
+    PAmend: (r.p_response==="Amend"&&r.rmk) ? r.rmk : null,
+    PCfRmk: (r.p_response==="Accept"&&r.rmk) ? r.rmk : null,
+    PPropDate: null, // not stored separately; packed into rmk
     WRsn: r.w_rsn, WAt: r.w_at, Updated: r.updated_at
   };
 }
@@ -854,15 +859,24 @@ async function apiFinal(d) {
 }
 
 async function apiConfirm(d) {
-  await sbUpdate(d.ID, {
+  // Only write columns that exist in the DB schema.
+  // p_amend, p_cf_rmk, p_prop_date are NOT in the table yet — use rmk to carry
+  // amendment details so the Pilot Admin Team can see them.
+  const payload = {
     p_accept: d.response === "Accept",
     p_response: d.response,
-    p_cf_rmk: d.rmk,
-    p_amend: d.amend || null,
-    p_prop_date: d.propDate || null,
     rlpl: d.rlpl || null
-    // NOTE: final_st is owned by Relocation Team (apiFinal) — pilot must NOT write it
-  });
+  };
+  // Pack amendment details into the existing rmk column so nothing is lost
+  if (d.response === "Amend") {
+    const parts = [];
+    if (d.amend) parts.push("Amendment: " + d.amend);
+    if (d.propDate) parts.push("Proposed Date: " + d.propDate);
+    if (parts.length) payload.rmk = parts.join(" | ");
+  } else if (d.rmk) {
+    payload.rmk = d.rmk;
+  }
+  await sbUpdate(d.ID, payload);
   return { success: true };
 }
 
@@ -880,7 +894,7 @@ function selRole2(r){
   $("roleCard").classList.add("hidden");
   if(r==="PILOT"){$("pilotLogin").classList.remove("hidden")}
   else{
-    $("staffTitle").textContent={AEP:"AEP Team Login",RELOCATION:"Relocation Team Login"}[r];
+    $("staffTitle").textContent={AEP:"AEP Team Login",RELOCATION:"Pilot Admin Team Login"}[r];
     $("staffLogin").classList.remove("hidden");
   }
 }
@@ -975,7 +989,7 @@ function pilotCard(r){
     ${r.RDate?`<div class="text-xs mb1">📅 Relocation: <strong>${dt(r.RDate)}</strong></div>`:""}
     ${r.RejRsn?`<div class="al al-r text-xs mt1"><span>✕</span><span>${r.RejRsn}</span></div>`:""}
     ${r.PResponse==="Amend"?`<div class="al al-w text-xs mt1" style="padding:7px 10px"><span>✏</span><span><strong>Amendment Requested:</strong> ${r.PAmend||""} ${r.PPropDate?"· Proposed Date: "+dt(r.PPropDate):""}</span></div>`:""}
-    ${r.PAccept?`<div class="al al-g text-xs mt1" style="padding:7px 10px"><span>✓</span><span>Relocation accepted by you. Awaiting final confirmation from Relocation Team.</span></div>`:""}
+    ${r.PAccept?`<div class="al al-g text-xs mt1" style="padding:7px 10px"><span>✓</span><span>Relocation accepted by you. Awaiting final confirmation from Pilot Admin Team.</span></div>`:""}
     <div class="flex gap1 mt2 fwrap">
       <button class="btn btn-s btn-sm" onclick="showDetail('${r.ID}')">View Details</button>
       ${needCf?`<button class="btn btn-g btn-sm" onclick="openCf('${r.ID}')">Respond to Acceptance →</button>`:""}
@@ -1009,7 +1023,7 @@ function showDetail(id){
     ${r.RejRsn?`<div class="al al-r"><span>✕</span><span>${r.RejRsn}</span></div>`:""}
     ${r.Rmk?`<div class="card mb2"><div class="ctitle">Pilot Remarks</div><p class="text-sm">${r.Rmk}</p></div>`:""}
     ${r.PreRmk?`<div class="card mb2"><div class="ctitle">Relocation Prelim Remarks</div><p class="text-sm">${r.PreRmk}</p></div>`:""}
-    ${((session.role==="RELOCATION"||session.role==="AEP")&&r.AEPRmk)?`<div class="card mb2"><div class="ctitle">AEP Remarks <span style="font-size:.68rem;color:var(--accent);margin-left:6px">🔒 Relocation Team &amp; AEP Only</span></div><p class="text-sm">${r.AEPRmk}</p></div>`:""}
+    ${((session.role==="RELOCATION"||session.role==="AEP")&&r.AEPRmk)?`<div class="card mb2"><div class="ctitle">AEP Remarks <span style="font-size:.68rem;color:var(--accent);margin-left:6px">🔒 Pilot Admin Team &amp; AEP Only</span></div><p class="text-sm">${r.AEPRmk}</p></div>`:""}
     ${r.FinRmk?`<div class="card mb2"><div class="ctitle">Relocation Remarks</div><p class="text-sm">${r.FinRmk}</p></div>`:""}
   `;
   openM("mDetail");
@@ -1062,7 +1076,7 @@ function openCf(id){
   $("cfAmendSection").classList.add("hidden");
   $("cfAcceptSection").classList.add("hidden");
   $("cfRelDetails").innerHTML=`
-    <div class="ctitle">Relocation Team Decision Details</div>
+    <div class="ctitle">Pilot Admin Team Decision Details</div>
     <div class="frow" style="margin-bottom:.5rem">
       <div><div class="text-xs text-m">Final Decision</div><div>${r.FinalSt?badge(r.FinalSt):"—"}</div></div>
       <div><div class="text-xs text-m">Confirmed Reloc Date</div><div class="text-a" style="font-weight:600">${dt(r.ConfDate||r.RDate)}</div></div>
@@ -1096,7 +1110,7 @@ async function doConfirm(){
       propDate:resp==="Amend"?($("cf_propdate_val")||{value:""}).value:""
     });
     closeM("mConfirm");
-    toast(resp==="Accept"?"Relocation accepted! Relocation Team notified ✓":"Amendment request sent to Relocation Team","ok");
+    toast(resp==="Accept"?"Relocation accepted! Pilot Admin Team notified ✓":"Amendment request sent to Pilot Admin Team","ok");
     await loadPilot();
   }catch(err){
     toast("Submit failed — "+( err&&err.message?err.message:"please retry"),"er");
@@ -1154,7 +1168,7 @@ function aepFilter(){
             <div id="aepPanelLbl-${r.ID}" style="font-family:var(--font-h);font-size:.72rem;letter-spacing:.06em;color:var(--accent);margin-bottom:6px"></div>
             <div class="frow" style="gap:.5rem;margin-bottom:.5rem">
               <div><label class="lbl" style="font-size:.7rem">Reloc Month</label><input id="aepM-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="e.g. July 2025" value="${r.AEPMonth||""}"/></div>
-              <div><label class="lbl" style="font-size:.7rem">Remarks (Relocation Team only 🔒)</label><input id="aepR-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="Internal remarks…" value="${r.AEPRmk||""}"/></div>
+              <div><label class="lbl" style="font-size:.7rem">Remarks (Pilot Admin Team only 🔒)</label><input id="aepR-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="Internal remarks…" value="${r.AEPRmk||""}"/></div>
             </div>
             <div class="flex gap1">
               <button class="btn btn-p btn-sm" id="aepSaveBtn-${r.ID}" onclick="saveAEP('${r.ID}')">Save</button>
@@ -1321,7 +1335,7 @@ function relFilter(){
           </div>
           <div id="finRejGrp-${r.ID}" style="display:none;margin-bottom:.5rem"><label class="lbl" style="font-size:.7rem">Rejection Reason <span class="req">*</span></label><input id="finRej-${r.ID}" class="fc" style="padding:5px 8px;font-size:.8rem" placeholder="Reason for rejection…"/></div>
           <div style="margin-bottom:.5rem">
-            <label class="lbl" style="font-size:.7rem">Relocation Team Remarks <span style="color:var(--dim);font-size:.65rem">(sent to Pilot)</span></label>
+            <label class="lbl" style="font-size:.7rem">Pilot Admin Team Remarks <span style="color:var(--dim);font-size:.65rem">(sent to Pilot)</span></label>
             <textarea id="finRmk-${r.ID}" class="fc" rows="3" style="font-size:.8rem" placeholder="Transfer order details, instructions for pilot, relocation date confirmation…">${r.FinRmk||""}</textarea>
           </div>
           <div class="al al-w" style="font-size:.74rem;margin-bottom:.5rem"><span>⚠</span><span>No transfer benefits. RLPL deducted from PL/CL.</span></div>
@@ -1523,13 +1537,13 @@ async function doFinal(){
 
 function emptyState(icon,h,p){return`<div class="empty"><div class="ei">${icon}</div><h3>${h}</h3><p>${p}</p></div>`}
 
-/* ── FINAL CONFIRMATION TAB (Relocation Team) ── */
+/* ── FINAL CONFIRMATION TAB (Pilot Admin Team) ── */
 function finalConfFilter(){
   const q=($("fcSrch")||{value:""}).value;
   const flt=($("fcFlt")||{value:""}).value;
   // Show all requests where pilot has responded (PResponse set) OR FinalSt=Approved waiting for pilot
   // Key fix: do NOT require FinalSt="Approved" — apiConfirm writes p_response/p_accept on the same row
-  // So filter: FinalSt=Approved (set by relocation team via saveFinal) AND pilot has responded (PResponse set)
+  // So filter: FinalSt=Approved (set by Pilot Admin Team via saveFinal) AND pilot has responded (PResponse set)
   // ALSO include: FinalSt=Approved AND no PResponse yet (pilot pending) — shown as "Awaiting Pilot"
   let rows=allData.filter(r=>r.FinalSt==="Approved"&&!["Withdrawn","Rejected"].includes(r.Status));
   if(q){const s=q.toLowerCase();rows=rows.filter(r=>(r.IGA||"").toLowerCase().includes(s)||(r.Name||"").toLowerCase().includes(s)||(r.ID||"").toLowerCase().includes(s))}
@@ -1537,7 +1551,7 @@ function finalConfFilter(){
   else if(flt==="Amend")rows=rows.filter(r=>r.PResponse==="Amend");
   else if(flt==="Pending")rows=rows.filter(r=>!r.PResponse);
   const el=$("finalConfTable");if(!el)return;
-  if(!rows.length){el.innerHTML=emptyState("📬","No final approvals yet","Requests approved by Relocation Team will appear here");return}
+  if(!rows.length){el.innerHTML=emptyState("📬","No final approvals yet","Requests approved by Pilot Admin Team will appear here");return}
   el.innerHTML=`<div class="twrap"><table>
     <thead><tr>
       <th>ID</th><th>IGA</th><th>Pilot</th><th>Transfer</th><th>Conf Date</th>
